@@ -2,5 +2,10 @@ extends layout
 
 block content
 	div
-		a(id='sender')='Send a Message'
+		p#uniqueid
+		input#uniquecode(name='uniquecode')
+		input#connect(type='submit', value='Connect')
+		p
+			button#clear Clear Log
+			button#send Send Test Signal to Room
 		ul(id='receiver')

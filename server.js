@@ -1,10 +1,15 @@
-//setup Dependencies
+///////////////////////////////////////////
+//               Setup                   //
+///////////////////////////////////////////
+
+//Dependencies
 var connect = require('connect')
     , express = require('express')
     , io = require('socket.io')
     , port = (process.env.PORT || 8081);
 
-//Setup Express
+
+//Express
 var server = express.createServer();
 server.configure(function(){
     server.set('views', __dirname + '/views');
@@ -16,12 +21,13 @@ server.configure(function(){
     server.use(server.router);
 });
 
-//setup the errors
+//Errors
 server.error(function(err, req, res, next){
     if (err instanceof NotFound) {
-        res.render('404.jade', { locals: { 
-                  title : '404 - Not Found'
-                 ,description: ''
+        res.render('404.jade', { 
+            locals: { 
+                title : '404 - Not Found'
+                ,description: ''
                  ,author: ''
                  ,analyticssiteid: 'XXXXXXX' 
                 },status: 404 });
@@ -35,49 +41,72 @@ server.error(function(err, req, res, next){
                 },status: 500 });
     }
 });
-server.listen( port);
 
-//Setup Socket.IO
+//Socket.IO
 var io = io.listen(server);
 io.sockets.on('connection', function(socket){
-  console.log('Client Connected');
-  socket.on('message', function(data){
-    socket.broadcast.emit('server_message',data);
-    socket.emit('server_message',data);
-  });
-  socket.on('disconnect', function(){
-    console.log('Client Disconnected.');
-  });
+    var uniqueid = MakeID();
+    socket.join(uniqueid);
+    console.log('Client '+socket.id+' connected, room '+uniqueid+' joined, emitting send_id.');
+    socket.emit('send_id',uniqueid);
+
+    socket.on('connection_request', function(data){
+        var rooms = Object.keys(io.sockets.manager.rooms);
+        if(rooms.indexOf('/' + data) >= 0) {
+            socket.join(data);
+            socket.emit('send_id',data);
+            io.sockets.to(data).emit('server_message','Client connected');
+        } else {
+            console.log('DOES NOT EXIST');
+        }
+    });
+
+    socket.on('client_message', function(data){
+        io.sockets.to(data.to).emit('server_message',data.msg);
+    });
+
+    socket.on('disconnect', function(){
+        console.log('Client Disconnected.');
+    });
 });
+
 
 
 ///////////////////////////////////////////
 //              Routes                   //
 ///////////////////////////////////////////
 
-/////// ADD ALL YOUR ROUTES HERE  /////////
-
+//Add all your routes here
 server.get('/', function(req,res){
   res.render('index.jade', {
     locals : { 
               title : 'Your Page Title'
              ,description: 'Your Page Description'
              ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX' 
+             ,analyticssiteid: 'XXXXXXX'
             }
   });
 });
 
-
-//A Route for Creating a 500 Error (Useful to keep around)
+//500 Error
 server.get('/500', function(req, res){
     throw new Error('This is a 500 Error');
 });
 
-//The 404 Route (ALWAYS Keep this as the last route)
+//404 Not Found (ALWAYS Keep this as the last route)
 server.get('/*', function(req, res){
     throw new NotFound;
 });
+
+//Start Listening
+server.listen(port);
+console.log('Listening on http://0.0.0.0:' + port );
+
+
+
+///////////////////////////////////////////
+//             Functions                 //
+///////////////////////////////////////////
 
 function NotFound(msg){
     this.name = 'NotFound';
@@ -85,5 +114,10 @@ function NotFound(msg){
     Error.captureStackTrace(this, arguments.callee);
 }
 
-
-console.log('Listening on http://0.0.0.0:' + port );
+function MakeID(){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
+}
