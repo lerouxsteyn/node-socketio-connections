@@ -58,7 +58,7 @@ io.sockets.on('connection', function(socket){
             socket.emit('connection_reply', { status: 'success', room: data });
             io.sockets.to(data).emit('server_message', { msg: 'Client connected.' });
         } else {
-            socket.emit('connection_reply', { status: 'failed', error: 'Room does not exist.' });
+            socket.emit('connection_reply', { status: 'failed', error: 'ID does not exist.' });
         }
     });
 
@@ -79,14 +79,12 @@ io.sockets.on('connection', function(socket){
 
 //Add all your routes here
 server.get('/', function(req,res){
-  res.render('index.jade', {
-    locals : { 
-              title : 'Your Page Title'
-             ,description: 'Your Page Description'
-             ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX'
-            }
-  });
+    res.render('desktop.jade');
+});
+
+//Mobile
+server.get('/mobile', function(req,res){
+    res.render('mobile.jade');
 });
 
 //500 Error

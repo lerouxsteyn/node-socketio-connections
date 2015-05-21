@@ -10,7 +10,7 @@ $(function() {
 	//Assign room ID
 	socket.on('send_id', function(data){
 		room = data;
-		$('#roomid').html('<strong>Room ID:</strong> '+data);
+		$('#roomid').html('<strong>ID:</strong> '+data);
 	});
 
 	//Send connection request
@@ -22,11 +22,11 @@ $(function() {
 				socket.emit('connection_request', req_room);
 			} else {
 				//already joined this room
-				alert('You have already joined this room.');
+				alert('You have already joined this ID.');
 			}
 		} else {
 			//very basic validation fail
-			alert('Please enter a valid room ID.');
+			alert('Please enter a valid ID.');
 		}
 	});
 
@@ -35,7 +35,9 @@ $(function() {
 		if(data.status == 'success') {
 			//SUCCESS!
 			room = data.room;
-			$('#roomid').html('<strong>Room ID:</strong> '+data.room);
+			$('#actions, #output').removeClass('hide');
+			$('.connect').fadeOut('slow');
+			$('#roomid').html('<strong>ID:</strong> '+data.room);
 			$('#inputid, #connect').attr('disabled', 'disabled'); //disable controls
 			//alert('SUCCESS! Connected to '+data.room);
 		} else {

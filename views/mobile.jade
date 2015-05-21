@@ -1,0 +1,14 @@
+extends layout
+
+block content
+	div.container
+		h1 Mobile
+		div.clearfix.connect
+			h3 Enter Desktop ID:
+			input#inputid.form-control
+			input#connect.btn.btn-default.form-control(type='submit', value='Connect')
+		div#actions.clearfix.btn-group-vertical.hide
+			include ./actions.jade
+		div#output.clearfix.hide
+			h3 Output:
+			ul(id='receiver')

@@ -1,0 +1,14 @@
+extends layout
+
+block content
+	div.container
+		div.clearfix
+			h1 Desktop
+			p
+				a(href='/mobile', target='_blank') Visit <strong>/mobile</strong> and enter the following ID
+			p#roomid
+		div#actions.clearfix.btn-group-vertical
+			include ./actions.jade
+		div.clearfix
+			h3 Output:
+			ul(id='receiver')
