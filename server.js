@@ -3,11 +3,12 @@
 ///////////////////////////////////////////
 
 //Dependencies
+var ip_address = '10.132.22.228';
+var ip_address = '0.0.0.0';
 var connect = require('connect')
     , express = require('express')
     , io = require('socket.io')
     , port = (process.env.PORT || 8081);
-
 
 //Express
 var server = express.createServer();
@@ -43,30 +44,30 @@ server.error(function(err, req, res, next){
 });
 
 //Socket.IO
-var io = io.listen(server);
+var io = io.listen(server, ip_address);
 io.sockets.on('connection', function(socket){
-    var uniqueid = MakeID();
-    socket.join(uniqueid);
-    console.log('Client '+socket.id+' connected, room '+uniqueid+' joined, emitting send_id.');
-    socket.emit('send_id',uniqueid);
+    var roomid = MakeID();
+    socket.join(roomid);
+    //console.log('Client '+socket.id+' connected, room '+roomid+' joined, emitting send_id.');
+    socket.emit('send_id',roomid);
 
     socket.on('connection_request', function(data){
         var rooms = Object.keys(io.sockets.manager.rooms);
         if(rooms.indexOf('/' + data) >= 0) {
             socket.join(data);
-            socket.emit('send_id',data);
-            io.sockets.to(data).emit('server_message','Client connected');
+            socket.emit('connection_reply', { status: 'success', room: data });
+            io.sockets.to(data).emit('server_message', { msg: 'Client connected.' });
         } else {
-            console.log('DOES NOT EXIST');
+            socket.emit('connection_reply', { status: 'failed', error: 'Room does not exist.' });
         }
     });
 
     socket.on('client_message', function(data){
-        io.sockets.to(data.to).emit('server_message',data.msg);
+        io.sockets.to(data.to).emit('server_message', { msg: data.msg });
     });
 
     socket.on('disconnect', function(){
-        console.log('Client Disconnected.');
+        //console.log('Client Disconnected.');
     });
 });
 
@@ -100,7 +101,7 @@ server.get('/*', function(req, res){
 
 //Start Listening
 server.listen(port);
-console.log('Listening on http://0.0.0.0:' + port );
+console.log('Listening on http://'+ip_address+':' + port);
 
 
 
