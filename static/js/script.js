@@ -35,7 +35,7 @@ $(function() {
 		if(data.status == 'success') {
 			//SUCCESS!
 			room = data.room;
-			$('#actions, #output').removeClass('hide');
+			$('#actions, #gesture, #output').removeClass('hide');
 			$('.connect').fadeOut('slow');
 			$('#roomid').html('<strong>ID:</strong> '+data.room);
 			$('#inputid, #connect').attr('disabled', 'disabled'); //disable controls
@@ -49,6 +49,12 @@ $(function() {
 	//Receive message
 	socket.on('server_message', function(data){
 		$('#receiver').append('<li>' + data.msg + '</li>');
+		if(data.action) {
+			switch (data.action) {
+				case 'vibrate':
+					if(navigator.vibrate) { navigator.vibrate([1000, 3000, 2000]); }
+			}
+		}
 	});
 
 
@@ -65,6 +71,35 @@ $(function() {
 	//Send test signal
 	$('#send').bind('click', function() {
 		socket.emit('client_message', { to: room, msg: 'Test signal.' });
+	});
+
+	//Vibrate
+	$('#vibrate').bind('click', function() {
+		socket.emit('client_message', { to: room, msg: 'Vibrate.', action: 'vibrate' });
+	});
+
+	//Voice Recognition
+	$('#voice').bind('click', function() {
+		var recognition = new webkitSpeechRecognition();
+		recognition.onresult = function(event) { 
+			alert(event.results[0][0].transcript);
+		}
+		recognition.start();
+	});
+
+	//Detect Pinch
+	var pinchDone = false;
+	var myElement = document.getElementById('gesture');
+	var mc = new Hammer.Manager(myElement);
+	var pinch = new Hammer.Pan();
+	mc.add([pinch]);
+	mc.on("pan", function(ev) {
+	    //console.log(ev);
+	    if(pinchDone == false && parseInt(ev.distance) > 100) {
+	    	pinchDone = true;
+	    	setTimeout(function() { pinchDone = false; $('#gesture').text('Pinch Me Again!'); }, 2000);
+	    	$('#gesture').text('Ouch!');
+	    }
 	});
 
 });

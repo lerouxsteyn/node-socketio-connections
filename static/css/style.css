@@ -2,3 +2,14 @@
 	width: 95px;
 	float: left;
 }
+
+#gesture {
+  background: #eee;
+  width: 190px;
+  height: 100px;
+  margin-top: 10px;
+  line-height: 100px;
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}

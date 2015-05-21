@@ -4,7 +4,7 @@
 
 //Dependencies
 var ip_address = '10.132.22.228';
-var ip_address = '0.0.0.0';
+//var ip_address = '0.0.0.0';
 var connect = require('connect')
     , express = require('express')
     , io = require('socket.io')
@@ -25,21 +25,9 @@ server.configure(function(){
 //Errors
 server.error(function(err, req, res, next){
     if (err instanceof NotFound) {
-        res.render('404.jade', { 
-            locals: { 
-                title : '404 - Not Found'
-                ,description: ''
-                 ,author: ''
-                 ,analyticssiteid: 'XXXXXXX' 
-                },status: 404 });
+        res.render('404.jade', { status: 404 });
     } else {
-        res.render('500.jade', { locals: { 
-                  title : 'The Server Encountered an Error'
-                 ,description: ''
-                 ,author: ''
-                 ,analyticssiteid: 'XXXXXXX'
-                 ,error: err 
-                },status: 500 });
+        res.render('500.jade', { status: 500 });
     }
 });
 
@@ -63,7 +51,8 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('client_message', function(data){
-        io.sockets.to(data.to).emit('server_message', { msg: data.msg });
+        if(!data.action) { data['action'] = null; }
+        io.sockets.to(data.to).emit('server_message', { msg: data.msg, action: data.action });
     });
 
     socket.on('disconnect', function(){
